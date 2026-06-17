@@ -1,0 +1,1193 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>토론을 통해 AI를 이겨라</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+    font-family: 'Pretendard', -apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif;
+    background: #f5f7fa;
+    color: #1f2937;
+    min-height: 100vh;
+    line-height: 1.7;
+    font-size: 17px;
+}
+.container {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+}
+.screen {
+    display: none;
+    width: 100%;
+    max-width: 900px;
+    background: white;
+    border-radius: 16px;
+    padding: 40px;
+    border: 1px solid #e5e7eb;
+    animation: fadeIn 0.4s ease;
+}
+.screen.active { display: block; }
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+h1 {
+    font-size: 32px;
+    color: #1f2937;
+    margin-bottom: 16px;
+    text-align: center;
+    font-weight: 700;
+}
+h2 {
+    font-size: 24px;
+    color: #1f2937;
+    margin-bottom: 20px;
+    font-weight: 700;
+}
+h3 {
+    font-size: 19px;
+    color: #374151;
+    margin-bottom: 12px;
+    font-weight: 600;
+}
+p { color: #4b5563; margin-bottom: 12px; }
+.btn {
+    display: inline-block;
+    padding: 14px 28px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 10px;
+    font-size: 17px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    text-decoration: none;
+}
+.btn:hover { background: #1d4ed8; }
+.btn:disabled { background: #9ca3af; cursor: not-allowed; }
+.btn-large { padding: 18px 36px; font-size: 19px; }
+.btn-secondary { background: #6b7280; }
+.btn-secondary:hover { background: #4b5563; }
+.btn-success { background: #059669; }
+.btn-success:hover { background: #047857; }
+.btn-danger { background: #dc2626; }
+.btn-danger:hover { background: #b91c1c; }
+.btn-row { display: flex; gap: 12px; justify-content: center; flex-wrap: wrap; margin-top: 24px; }
+.input-group { margin-bottom: 20px; }
+.input-group label {
+    display: block;
+    font-weight: 600;
+    margin-bottom: 8px;
+    color: #374151;
+    font-size: 16px;
+}
+.input-group input, .input-group textarea, .input-group select {
+    width: 100%;
+    padding: 14px 16px;
+    border: 2px solid #d1d5db;
+    border-radius: 10px;
+    font-size: 17px;
+    font-family: inherit;
+    background: white;
+    color: #1f2937;
+}
+.input-group input:focus, .input-group textarea:focus, .input-group select:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+.input-group textarea { min-height: 120px; resize: vertical; line-height: 1.7; }
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.grid-4 { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; }
+@media (max-width: 640px) {
+    .grid-4 { grid-template-columns: repeat(2, 1fr); }
+    h1 { font-size: 26px; }
+    .screen { padding: 24px; }
+}
+.center { text-align: center; }
+.mb-20 { margin-bottom: 20px; }
+.mb-30 { margin-bottom: 30px; }
+.alert {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin: 12px 0;
+    font-weight: 500;
+}
+.alert-success { background: #d1fae5; color: #065f46; border: 1px solid #6ee7b7; }
+.alert-error { background: #fee2e2; color: #991b1b; border: 1px solid #fca5a5; }
+.alert-info { background: #dbeafe; color: #1e40af; border: 1px solid #93c5fd; }
+.alert-warn { background: #fef3c7; color: #92400e; border: 1px solid #fcd34d; }
+
+/* 관리자 버튼 */
+.admin-btn {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    padding: 10px 18px;
+    background: #1f2937;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+/* 토론 화면 */
+.timer-bar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: #f9fafb;
+    padding: 18px 24px;
+    border-radius: 12px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+}
+.timer-stage {
+    font-size: 22px;
+    font-weight: 700;
+    color: #1f2937;
+}
+.timer-display {
+    font-size: 42px;
+    font-weight: 700;
+    color: #dc2626;
+    font-variant-numeric: tabular-nums;
+    transition: color 0.3s;
+}
+.timer-display.overtime {
+    color: #dc2626;
+    animation: blink 1s infinite;
+}
+@keyframes blink {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+}
+
+.position-badge {
+    display: inline-block;
+    padding: 6px 14px;
+    border-radius: 6px;
+    font-weight: 700;
+    font-size: 15px;
+    margin-left: 8px;
+}
+.position-pro { background: #dbeafe; color: #1e40af; }
+.position-con { background: #fee2e2; color: #991b1b; }
+
+.stage-explain {
+    background: #eff6ff;
+    border-left: 4px solid #2563eb;
+    padding: 14px 18px;
+    border-radius: 8px;
+    margin-bottom: 20px;
+    font-size: 15px;
+    color: #1e40af;
+}
+
+.history-box {
+    background: #f9fafb;
+    border-radius: 12px;
+    padding: 16px;
+    margin-bottom: 20px;
+    border: 1px solid #e5e7eb;
+    max-height: 400px;
+    overflow-y: auto;
+}
+.history-toggle {
+    cursor: pointer;
+    font-weight: 600;
+    padding: 8px 0;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    color: #1f2937;
+}
+.history-content { margin-top: 12px; display: none; }
+.history-content.open { display: block; }
+
+.msg {
+    padding: 14px 18px;
+    border-radius: 10px;
+    margin-bottom: 10px;
+    line-height: 1.7;
+}
+.msg-student { background: #dbeafe; border-left: 4px solid #2563eb; }
+.msg-ai { background: #fee2e2; border-left: 4px solid #dc2626; }
+.msg-speaker { font-weight: 700; margin-bottom: 6px; font-size: 14px; }
+.msg-stage { font-size: 12px; color: #6b7280; margin-left: 8px; font-weight: 500; }
+
+.image-preview {
+    max-width: 200px;
+    max-height: 200px;
+    border-radius: 8px;
+    margin-top: 10px;
+    border: 1px solid #d1d5db;
+}
+.image-upload-area {
+    display: flex;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.loading-spinner {
+    border: 4px solid #e5e7eb;
+    border-top: 4px solid #2563eb;
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    animation: spin 1s linear infinite;
+    margin: 0 auto 20px;
+}
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+.thinking-dots {
+    display: inline-block;
+    margin-left: 4px;
+}
+.thinking-dots::after {
+    content: '...';
+    animation: dots 1.5s infinite;
+}
+@keyframes dots {
+    0%, 20% { content: '.'; }
+    40% { content: '..'; }
+    60%, 100% { content: '...'; }
+}
+
+.position-cards {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+    margin: 20px 0;
+}
+.position-card {
+    padding: 24px;
+    border: 2px solid #d1d5db;
+    border-radius: 12px;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+}
+.position-card:hover { border-color: #9ca3af; background: #f9fafb; }
+.position-card.selected {
+    border-color: #2563eb;
+    background: #eff6ff;
+}
+.position-card h3 {
+    font-size: 22px;
+    margin-bottom: 8px;
+}
+
+.completion-icon {
+    font-size: 80px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+<!-- ============ 화면 1: 메인 ============ -->
+<div class="screen active" id="screen-main">
+    <div class="center">
+        <h1>토론을 통해 AI를 이겨라</h1>
+        <p style="font-size: 18px; margin-bottom: 30px; color: #6b7280;">
+            논리적 사고력과 표현력을 키우는 AI 토론 연습
+        </p>
+        <button class="btn btn-large" onclick="goToScreen('screen-student-info')">토론 시작하기</button>
+    </div>
+</div>
+
+<!-- ============ 화면 2: 학생 정보 입력 ============ -->
+<div class="screen" id="screen-student-info">
+    <h2>참가자 정보 입력</h2>
+    <p class="mb-20">토론 결과 기록에 사용됩니다.</p>
+
+    <div class="grid-4">
+        <div class="input-group">
+            <label>학년</label>
+            <select id="input-grade">
+                <option value="">선택</option>
+                <option value="1학년">1학년</option>
+                <option value="2학년">2학년</option>
+                <option value="3학년">3학년</option>
+            </select>
+        </div>
+        <div class="input-group">
+            <label>반</label>
+            <input type="text" id="input-class" placeholder="예: 3">
+        </div>
+        <div class="input-group">
+            <label>번호</label>
+            <input type="text" id="input-number" placeholder="예: 15">
+        </div>
+        <div class="input-group">
+            <label>이름</label>
+            <input type="text" id="input-name" placeholder="홍길동">
+        </div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goToScreen('screen-main')">← 뒤로</button>
+        <button class="btn" onclick="submitStudentInfo()">다음 →</button>
+    </div>
+</div>
+
+<!-- ============ 화면 3: 논제 및 진영 선택 ============ -->
+<div class="screen" id="screen-topic">
+    <h2>논제 및 진영 선택</h2>
+
+    <div class="input-group">
+        <label>토론 논제를 직접 입력하세요</label>
+        <textarea id="input-topic" placeholder="예) 중학생의 스마트폰 사용을 학교에서 제한해야 한다."></textarea>
+    </div>
+
+    <div class="input-group">
+        <label>당신의 입장을 선택하세요</label>
+        <div class="position-cards">
+            <div class="position-card" id="card-pro" onclick="selectPosition('찬성')">
+                <h3>찬성</h3>
+                <p style="font-size: 14px; margin: 0;">논제에 동의합니다</p>
+            </div>
+            <div class="position-card" id="card-con" onclick="selectPosition('반대')">
+                <h3>반대</h3>
+                <p style="font-size: 14px; margin: 0;">논제에 반대합니다</p>
+            </div>
+        </div>
+    </div>
+
+    <div class="alert alert-info">
+        <strong>토론 순서 안내</strong><br>
+        토론은 항상 <strong>찬성측이 먼저</strong> 발언하고, 이어서 반대측이 발언합니다.<br>
+        만약 반대 입장을 선택하시면, AI(찬성)가 먼저 발언한 뒤 학생(반대)이 발언합니다.
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-secondary" onclick="goToScreen('screen-student-info')">← 뒤로</button>
+        <button class="btn" onclick="startDebate()">토론 시작 →</button>
+    </div>
+</div>
+
+<!-- ============ 화면 4: AI 로딩 ============ -->
+<div class="screen" id="screen-loading">
+    <div class="center" style="padding: 60px 20px;">
+        <div class="loading-spinner"></div>
+        <h2 id="loading-title">AI가 답변을 준비 중입니다</h2>
+        <p id="loading-desc" style="margin-top: 12px;">잠시만 기다려주세요<span class="thinking-dots"></span></p>
+    </div>
+</div>
+
+<!-- ============ 화면 5: 토론 진행 (학생 차례) ============ -->
+<div class="screen" id="screen-debate-student">
+    <div class="timer-bar">
+        <div class="timer-stage">
+            <span id="stage-label-student">입론</span>
+            <span class="position-badge" id="student-badge">찬성</span>
+            (학생)
+        </div>
+        <div class="timer-display" id="timer-student">03:00</div>
+    </div>
+
+    <div class="stage-explain" id="stage-explain-student"></div>
+
+    <!-- 토론 기록 -->
+    <div class="history-box">
+        <div class="history-toggle" onclick="toggleHistory('history-student')">
+            <span>이전 발언 기록 보기</span>
+            <span id="history-arrow-student">▼</span>
+        </div>
+        <div class="history-content" id="history-student"></div>
+    </div>
+
+    <!-- 발언 입력 -->
+    <div class="input-group">
+        <label>당신의 발언을 입력하세요</label>
+        <textarea id="student-input" placeholder="이곳에 발언 내용을 작성하세요..."></textarea>
+    </div>
+
+    <!-- 이미지 첨부 -->
+    <div class="input-group">
+        <label>이미지 첨부 (선택사항) - AI가 이미지를 분석하여 토론에 반영합니다</label>
+        <div class="image-upload-area">
+            <input type="file" id="image-input" accept="image/*" capture="environment" onchange="previewImage(event)" style="display:none;">
+            <button class="btn btn-secondary" onclick="document.getElementById('image-input').click()" style="padding: 10px 20px; font-size: 15px;">사진 선택 / 촬영</button>
+            <button class="btn btn-secondary" onclick="removeImage()" style="padding: 10px 20px; font-size: 15px;" id="remove-img-btn" disabled>제거</button>
+        </div>
+        <img id="image-preview" class="image-preview" style="display:none;">
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-success btn-large" onclick="submitStudentTurn()">발언 제출 →</button>
+    </div>
+</div>
+
+<!-- ============ 화면 6: 토론 진행 (AI 차례) ============ -->
+<div class="screen" id="screen-debate-ai">
+    <div class="timer-bar">
+        <div class="timer-stage">
+            <span id="stage-label-ai">입론</span>
+            <span class="position-badge" id="ai-badge">반대</span>
+            (AI)
+        </div>
+        <div class="timer-display" id="timer-ai">03:00</div>
+    </div>
+
+    <div class="stage-explain" id="stage-explain-ai"></div>
+
+    <!-- 토론 기록 -->
+    <div class="history-box">
+        <div class="history-toggle" onclick="toggleHistory('history-ai')">
+            <span>이전 발언 기록 보기</span>
+            <span id="history-arrow-ai">▼</span>
+        </div>
+        <div class="history-content" id="history-ai"></div>
+    </div>
+
+    <!-- AI 발언 영역 -->
+    <div id="ai-thinking" class="alert alert-info">
+        <strong>AI가 생각 중입니다<span class="thinking-dots"></span></strong><br>
+        충분한 검토 후 답변을 제시합니다.
+    </div>
+
+    <div id="ai-response-box" style="display:none;">
+        <div class="msg msg-ai">
+            <div class="msg-speaker">AI 발언</div>
+            <div id="ai-response-text"></div>
+        </div>
+    </div>
+
+    <!-- AI 응답 오류 시 표시 -->
+    <div id="ai-error-box" style="display:none;">
+        <div class="alert alert-error">
+            <strong>AI 응답을 받지 못했습니다.</strong><br>
+            <span id="ai-error-detail" style="font-size: 14px;"></span><br>
+            <span style="font-size: 14px;">네트워크 문제일 수 있습니다. [다시 시도] 버튼을 눌러 AI에게 답변을 다시 요청하세요.</span>
+        </div>
+        <div class="btn-row" style="margin-top: 12px;">
+            <button class="btn btn-danger" onclick="retryAiResponse()">🔄 다시 시도</button>
+            <button class="btn btn-secondary" onclick="skipAiResponse()">⏭ 건너뛰기 (감점 가능)</button>
+        </div>
+    </div>
+
+    <div class="btn-row">
+        <button class="btn btn-success btn-large" id="next-stage-btn" onclick="nextStage()" disabled>다음 단계로 →</button>
+    </div>
+</div>
+
+<!-- ============ 화면 7: 평가 중 ============ -->
+<div class="screen" id="screen-evaluating">
+    <div class="center" style="padding: 60px 20px;">
+        <div class="loading-spinner"></div>
+        <h2>토론을 평가하고 있습니다</h2>
+        <p style="margin-top: 12px;">결과를 기록 중입니다<span class="thinking-dots"></span></p>
+    </div>
+</div>
+
+<!-- ============ 화면 8: 완료 ============ -->
+<div class="screen" id="screen-complete">
+    <div class="center">
+        <div class="completion-icon">🎉</div>
+        <h1>토론이 완료되었습니다</h1>
+        <p style="font-size: 18px; margin-top: 12px;">수고하셨습니다!</p>
+        <p style="margin-top: 8px; color: #6b7280;">결과는 담당 선생님께서 확인하십니다.</p>
+
+        <div id="sheet-status-msg" class="alert" style="margin-top: 24px; display: none;"></div>
+
+        <!-- 시트 확인 안내 (선생님용) -->
+        <div id="sheet-guide" class="alert alert-info" style="margin-top: 20px; text-align: left; display: none;">
+            <strong>📊 선생님 안내</strong><br>
+            <span style="font-size: 15px;">
+            • 결과는 <strong>구글 스프레드시트에 자동 저장</strong>되었습니다.<br>
+            • 이미 시트가 켜져 있다면 <strong>잠시 후 자동으로 새 행이 나타납니다</strong> (1~3초).<br>
+            • 만약 보이지 않으면 시트에서 <strong>F5(새로고침)</strong>을 한 번 눌러주세요.<br>
+            • 시트의 <strong>맨 아래쪽</strong>에서 가장 최근 행을 확인하세요.
+            </span>
+        </div>
+
+        <div class="btn-row" style="margin-top: 24px;">
+            <button class="btn btn-success" id="open-sheet-btn" onclick="openSheet()" style="display:none;">📊 구글 스프레드시트 열기</button>
+            <button class="btn btn-large" onclick="restart()">처음으로 돌아가기</button>
+        </div>
+    </div>
+</div>
+
+<!-- ============ 화면 9: 관리자 ============ -->
+<div class="screen" id="screen-admin">
+    <h2>관리자 설정</h2>
+
+    <div id="admin-login-area">
+        <div class="input-group">
+            <label>관리자 비밀번호</label>
+            <input type="password" id="admin-password" placeholder="비밀번호 입력">
+        </div>
+        <div class="btn-row">
+            <button class="btn btn-secondary" onclick="goToScreen('screen-main')">← 뒤로</button>
+            <button class="btn" onclick="adminLogin()">로그인</button>
+        </div>
+        <div id="admin-login-msg"></div>
+    </div>
+
+    <div id="admin-settings-area" style="display:none;">
+        <div class="input-group">
+            <label>Google AI Studio API 키</label>
+            <input type="text" id="admin-api-key" placeholder="AIza...">
+        </div>
+        <button class="btn btn-secondary" onclick="testApiConnection()" style="margin-bottom: 12px;">API 연결 테스트</button>
+        <div id="api-test-result"></div>
+
+        <div class="input-group" style="margin-top: 24px;">
+            <label>구글 스프레드시트 웹훅 URL (Apps Script)</label>
+            <input type="text" id="admin-sheet-url" placeholder="https://script.google.com/macros/s/.../exec">
+        </div>
+        <button class="btn btn-secondary" onclick="testSheetConnection()" style="margin-bottom: 12px;">시트 연결 테스트</button>
+        <div id="sheet-test-result"></div>
+
+        <div class="input-group" style="margin-top: 24px;">
+            <label>구글 스프레드시트 보기 URL (선택사항)</label>
+            <input type="text" id="admin-sheet-view-url" placeholder="https://docs.google.com/spreadsheets/d/.../edit">
+            <p style="font-size: 13px; color: #6b7280; margin-top: 6px;">
+            입력하면 토론 종료 화면에 "구글 스프레드시트 열기" 버튼이 나타납니다.<br>
+            구글 시트의 주소창 URL을 그대로 복사해서 붙여넣으세요.
+            </p>
+        </div>
+
+        <div class="btn-row" style="margin-top: 24px;">
+            <button class="btn btn-secondary" onclick="goToScreen('screen-main')">← 뒤로</button>
+            <button class="btn btn-success" onclick="saveAdminSettings()">설정 저장</button>
+        </div>
+        <div id="admin-save-msg"></div>
+    </div>
+</div>
+
+</div>
+
+<!-- 관리자 버튼 -->
+<button class="admin-btn" onclick="goToScreen('screen-admin')">관리자</button>
+
+<script>
+// ============================================================
+// 전역 상태
+// ============================================================
+const state = {
+    studentInfo: {},
+    topic: "",
+    studentPosition: "",
+    aiPosition: "",
+    debateHistory: [],
+    currentStageIndex: 0,
+    overtimeSeconds: 0,
+    timerInterval: null,
+    currentImage: null,
+    sheetViewUrl: "",
+    lastAiRequest: null,  // AI 응답 실패 시 재시도용
+};
+
+// 토론 단계 정의 (찬성측이 항상 먼저)
+// 학생이 찬성이면: 학생→AI 순서
+// 학생이 반대이면: AI→학생 순서
+const STAGES = [
+    { name: "입론", proTime: 180, conTime: 180 },      // 3분
+    { name: "반론1", proTime: 120, conTime: 120 },     // 2분
+    { name: "반론2", proTime: 120, conTime: 120 },     // 2분
+    { name: "최종변론", proTime: 120, conTime: 120 },  // 2분
+];
+
+// 단계별 설명문 (학생용)
+const STAGE_EXPLAIN = {
+    "입론": "<strong>입론</strong>은 논제에 대해 처음으로 자신의 입장을 밝히는 단계입니다. 상대의 주장을 반박하지 말고, 본인의 핵심 주장과 근거를 명확히 제시하세요.",
+    "반론1": "<strong>반론(1차)</strong>은 상대방이 입론에서 제시한 주장에 대해 반박하는 단계입니다. 상대 주장의 약점, 논리적 허점, 근거 부족 등을 지적하세요.",
+    "반론2": "<strong>반론(2차)</strong>은 1차 반론 이후 새롭게 제시된 주장에 대해 다시 반박하는 단계입니다. 더 강력한 근거로 본인의 입장을 강화하세요.",
+    "최종변론": "<strong>최종변론</strong>은 본인의 주장을 정리하며 마무리하는 단계입니다. 새로운 반박보다는 지금까지의 주장을 요약하고 강조하세요."
+};
+
+// ============================================================
+// 화면 전환
+// ============================================================
+function goToScreen(screenId) {
+    document.querySelectorAll('.screen').forEach(s => s.classList.remove('active'));
+    document.getElementById(screenId).classList.add('active');
+    window.scrollTo(0, 0);
+}
+
+// ============================================================
+// 학생 정보
+// ============================================================
+function submitStudentInfo() {
+    const grade = document.getElementById('input-grade').value.trim();
+    const className = document.getElementById('input-class').value.trim();
+    const number = document.getElementById('input-number').value.trim();
+    const name = document.getElementById('input-name').value.trim();
+
+    if (!grade || !className || !number || !name) {
+        alert('학년, 반, 번호, 이름을 모두 입력해주세요.');
+        return;
+    }
+
+    state.studentInfo = { grade, class_name: className, number, name };
+    goToScreen('screen-topic');
+}
+
+// ============================================================
+// 논제 / 입장 선택
+// ============================================================
+function selectPosition(pos) {
+    state.studentPosition = pos;
+    state.aiPosition = pos === '찬성' ? '반대' : '찬성';
+
+    document.getElementById('card-pro').classList.toggle('selected', pos === '찬성');
+    document.getElementById('card-con').classList.toggle('selected', pos === '반대');
+}
+
+function startDebate() {
+    const topic = document.getElementById('input-topic').value.trim();
+    if (!topic) {
+        alert('논제를 입력해주세요.');
+        return;
+    }
+    if (!state.studentPosition) {
+        alert('찬성 또는 반대 입장을 선택해주세요.');
+        return;
+    }
+
+    state.topic = topic;
+    state.debateHistory = [];
+    state.currentStageIndex = 0;
+    state.overtimeSeconds = 0;
+
+    // 찬성측이 먼저! 학생이 찬성이면 학생부터, 반대면 AI부터
+    if (state.studentPosition === '찬성') {
+        startStudentTurn();
+    } else {
+        startAiTurn();
+    }
+}
+
+// ============================================================
+// 학생 차례 시작
+// ============================================================
+function startStudentTurn() {
+    const stage = STAGES[state.currentStageIndex];
+    const timeLimit = state.studentPosition === '찬성' ? stage.proTime : stage.conTime;
+
+    // UI 업데이트
+    document.getElementById('stage-label-student').textContent = stage.name;
+    const badge = document.getElementById('student-badge');
+    badge.textContent = state.studentPosition;
+    badge.className = 'position-badge ' + (state.studentPosition === '찬성' ? 'position-pro' : 'position-con');
+    document.getElementById('stage-explain-student').innerHTML = STAGE_EXPLAIN[stage.name];
+    document.getElementById('student-input').value = '';
+    removeImage();
+
+    updateHistory('history-student');
+    goToScreen('screen-debate-student');
+
+    // 타이머 시작
+    startTimer('timer-student', timeLimit);
+}
+
+// ============================================================
+// AI 차례 시작
+// ============================================================
+async function startAiTurn() {
+    const stage = STAGES[state.currentStageIndex];
+    const timeLimit = state.aiPosition === '찬성' ? stage.proTime : stage.conTime;
+
+    // UI 업데이트
+    document.getElementById('stage-label-ai').textContent = stage.name;
+    const badge = document.getElementById('ai-badge');
+    badge.textContent = state.aiPosition;
+    badge.className = 'position-badge ' + (state.aiPosition === '찬성' ? 'position-pro' : 'position-con');
+    document.getElementById('stage-explain-ai').innerHTML = STAGE_EXPLAIN[stage.name];
+    document.getElementById('ai-thinking').style.display = 'block';
+    document.getElementById('ai-response-box').style.display = 'none';
+    document.getElementById('ai-error-box').style.display = 'none';
+    document.getElementById('next-stage-btn').disabled = true;
+
+    updateHistory('history-ai');
+    goToScreen('screen-debate-ai');
+
+    // 타이머 시작
+    startTimer('timer-ai', timeLimit);
+
+    // 학생의 직전 발언 (있으면)
+    let studentArgument = "";
+    for (let i = state.debateHistory.length - 1; i >= 0; i--) {
+        if (state.debateHistory[i].speaker === '학생') {
+            studentArgument = state.debateHistory[i].content;
+            break;
+        }
+    }
+
+    // 재시도용으로 요청 정보 저장
+    state.lastAiRequest = {
+        topic: state.topic,
+        student_position: state.studentPosition,
+        stage: stage.name,
+        student_argument: studentArgument,
+        debate_history: [...state.debateHistory],
+        time_limit: timeLimit,
+        image_base64: state.currentImage || ""
+    };
+
+    await requestAiResponse(stage);
+}
+
+// AI 응답 요청 (재시도 가능)
+async function requestAiResponse(stage) {
+    document.getElementById('ai-thinking').style.display = 'block';
+    document.getElementById('ai-response-box').style.display = 'none';
+    document.getElementById('ai-error-box').style.display = 'none';
+    document.getElementById('next-stage-btn').disabled = true;
+
+    try {
+        const res = await fetch('/api/ai-response', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify(state.lastAiRequest)
+        });
+        const data = await res.json();
+
+        if (data.success && data.response) {
+            // 성공: AI 응답 표시
+            document.getElementById('ai-thinking').style.display = 'none';
+            document.getElementById('ai-response-box').style.display = 'block';
+            document.getElementById('ai-error-box').style.display = 'none';
+            document.getElementById('ai-response-text').textContent = data.response;
+            document.getElementById('next-stage-btn').disabled = false;
+
+            // 기록 추가
+            state.debateHistory.push({
+                speaker: 'AI',
+                position: state.aiPosition,
+                stage: stage.name,
+                content: data.response
+            });
+        } else {
+            // 실패: 오류 박스 표시 (히스토리에 추가 안 함! 재시도 가능)
+            showAiError(data.error || '알 수 없는 오류');
+        }
+    } catch (e) {
+        showAiError('네트워크 오류: ' + e.message);
+    }
+}
+
+// AI 오류 표시
+function showAiError(errMsg) {
+    document.getElementById('ai-thinking').style.display = 'none';
+    document.getElementById('ai-response-box').style.display = 'none';
+    document.getElementById('ai-error-box').style.display = 'block';
+    document.getElementById('ai-error-detail').textContent = errMsg;
+    document.getElementById('next-stage-btn').disabled = true;
+}
+
+// 재시도 버튼
+async function retryAiResponse() {
+    if (!state.lastAiRequest) {
+        alert('재시도할 요청이 없습니다.');
+        return;
+    }
+    const stage = STAGES[state.currentStageIndex];
+    await requestAiResponse(stage);
+}
+
+// 건너뛰기 버튼 (감점 가능)
+function skipAiResponse() {
+    if (!confirm('AI 응답을 받지 않고 다음 단계로 진행하시겠습니까?\n(AI 발언이 없으므로 평가에 영향이 있을 수 있습니다.)')) {
+        return;
+    }
+    const stage = STAGES[state.currentStageIndex];
+    state.debateHistory.push({
+        speaker: 'AI',
+        position: state.aiPosition,
+        stage: stage.name,
+        content: "(네트워크 오류로 AI가 응답하지 못함 - 건너뛰기 처리)"
+    });
+    document.getElementById('ai-error-box').style.display = 'none';
+    document.getElementById('next-stage-btn').disabled = false;
+}
+
+// ============================================================
+// 학생 발언 제출
+// ============================================================
+function submitStudentTurn() {
+    const content = document.getElementById('student-input').value.trim();
+    if (!content) {
+        if (!confirm('발언이 비어있습니다. 그래도 제출하시겠습니까?')) return;
+    }
+
+    stopTimer();
+
+    const stage = STAGES[state.currentStageIndex];
+    state.debateHistory.push({
+        speaker: '학생',
+        position: state.studentPosition,
+        stage: stage.name,
+        content: content || "(발언 없음)",
+        image: state.currentImage || ""
+    });
+
+    // 다음 차례 결정
+    // 찬성측 먼저 발언했으면 → 반대측 차례
+    // 학생이 찬성이면: 학생→AI
+    // 학생이 반대이면: AI(찬성)가 먼저 발언했으니, 학생(반대) 발언 후 다음 단계
+    if (state.studentPosition === '찬성') {
+        // 학생(찬성) 발언 끝 → AI(반대) 차례
+        startAiTurn();
+    } else {
+        // 학생(반대) 발언 끝 → 다음 단계로
+        moveToNextStage();
+    }
+}
+
+// ============================================================
+// 다음 단계
+// ============================================================
+function nextStage() {
+    stopTimer();
+
+    // 학생이 찬성이면: AI 발언이 끝났으니 다음 단계로
+    // 학생이 반대이면: AI(찬성) 발언이 끝났으니 학생(반대) 차례
+    if (state.studentPosition === '찬성') {
+        moveToNextStage();
+    } else {
+        startStudentTurn();
+    }
+}
+
+function moveToNextStage() {
+    state.currentStageIndex++;
+
+    if (state.currentStageIndex >= STAGES.length) {
+        // 토론 종료 → 평가
+        evaluateDebate();
+        return;
+    }
+
+    // 다음 단계 시작 (찬성측 먼저)
+    if (state.studentPosition === '찬성') {
+        startStudentTurn();
+    } else {
+        startAiTurn();
+    }
+}
+
+// ============================================================
+// 타이머
+// ============================================================
+function startTimer(displayId, seconds) {
+    stopTimer();
+
+    let remaining = seconds;
+    let overtime = false;
+
+    const display = document.getElementById(displayId);
+    display.classList.remove('overtime');
+    updateTimerDisplay(display, remaining);
+
+    state.timerInterval = setInterval(() => {
+        if (remaining > 0) {
+            remaining--;
+            updateTimerDisplay(display, remaining);
+            if (remaining === 0) {
+                overtime = true;
+                display.classList.add('overtime');
+                playBeep();
+            }
+        } else {
+            // 초과 시간 카운트
+            state.overtimeSeconds++;
+            const overSec = state.overtimeSeconds;
+            display.textContent = "+" + formatTime(overSec);
+        }
+    }, 1000);
+}
+
+function stopTimer() {
+    if (state.timerInterval) {
+        clearInterval(state.timerInterval);
+        state.timerInterval = null;
+    }
+}
+
+function updateTimerDisplay(el, seconds) {
+    el.textContent = formatTime(seconds);
+}
+
+function formatTime(sec) {
+    const m = Math.floor(sec / 60).toString().padStart(2, '0');
+    const s = (sec % 60).toString().padStart(2, '0');
+    return m + ':' + s;
+}
+
+function playBeep() {
+    try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.value = 800;
+        gain.gain.value = 0.3;
+        osc.start();
+        setTimeout(() => { osc.stop(); ctx.close(); }, 300);
+    } catch (e) {}
+}
+
+// ============================================================
+// 히스토리 표시
+// ============================================================
+function updateHistory(containerId) {
+    const container = document.getElementById(containerId);
+    if (state.debateHistory.length === 0) {
+        container.innerHTML = '<p style="color: #9ca3af;">아직 발언이 없습니다.</p>';
+        return;
+    }
+    container.innerHTML = state.debateHistory.map(h => {
+        const isStudent = h.speaker === '학생';
+        return `
+            <div class="msg ${isStudent ? 'msg-student' : 'msg-ai'}">
+                <div class="msg-speaker">
+                    ${h.speaker} (${h.position})
+                    <span class="msg-stage">${h.stage}</span>
+                </div>
+                <div>${escapeHtml(h.content)}</div>
+            </div>
+        `;
+    }).join('');
+}
+
+function toggleHistory(id) {
+    const el = document.getElementById(id);
+    el.classList.toggle('open');
+    const arrowId = id === 'history-student' ? 'history-arrow-student' : 'history-arrow-ai';
+    document.getElementById(arrowId).textContent = el.classList.contains('open') ? '▲' : '▼';
+}
+
+function escapeHtml(s) {
+    return String(s).replace(/[&<>"']/g, m => ({
+        '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+    }[m]));
+}
+
+// ============================================================
+// 이미지 업로드
+// ============================================================
+function previewImage(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (e) => {
+        const img = document.getElementById('image-preview');
+        img.src = e.target.result;
+        img.style.display = 'block';
+        state.currentImage = e.target.result;
+        document.getElementById('remove-img-btn').disabled = false;
+    };
+    reader.readAsDataURL(file);
+}
+
+function removeImage() {
+    document.getElementById('image-preview').src = '';
+    document.getElementById('image-preview').style.display = 'none';
+    document.getElementById('image-input').value = '';
+    state.currentImage = null;
+    document.getElementById('remove-img-btn').disabled = true;
+}
+
+// ============================================================
+// 평가
+// ============================================================
+async function evaluateDebate() {
+    stopTimer();
+    goToScreen('screen-evaluating');
+
+    // 초과 시간 감점 계산
+    let penalty = 0;
+    const over = state.overtimeSeconds;
+    if (over <= 10) penalty = 0;
+    else if (over <= 30) penalty = 1;
+    else if (over <= 60) penalty = 3;
+    else penalty = 5;
+
+    try {
+        const res = await fetch('/api/evaluate', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({
+                topic: state.topic,
+                student_position: state.studentPosition,
+                debate_history: state.debateHistory,
+                student_info: state.studentInfo,
+                overtime_penalty: penalty
+            })
+        });
+        const data = await res.json();
+
+        // 시트 전송 상태 표시
+        const statusEl = document.getElementById('sheet-status-msg');
+        const guideEl = document.getElementById('sheet-guide');
+        const openBtn = document.getElementById('open-sheet-btn');
+
+        if (data.success && data.sheet_status) {
+            if (data.sheet_status.includes('성공')) {
+                statusEl.className = 'alert alert-success';
+                statusEl.innerHTML = '✅ 결과가 구글 스프레드시트에 <strong>자동으로 저장</strong>되었습니다.';
+                // 안내 메시지 표시
+                guideEl.style.display = 'block';
+            } else if (data.sheet_status.includes('미설정')) {
+                statusEl.className = 'alert alert-warn';
+                statusEl.textContent = '구글 시트 URL이 설정되지 않았습니다. (관리자 설정 확인 필요)';
+            } else {
+                statusEl.className = 'alert alert-error';
+                statusEl.textContent = '시트 저장 실패: ' + data.sheet_status;
+            }
+            statusEl.style.display = 'block';
+        }
+
+        // 시트 보기 URL이 있으면 버튼 표시
+        if (data.sheet_view_url) {
+            state.sheetViewUrl = data.sheet_view_url;
+            openBtn.style.display = 'inline-block';
+        } else {
+            openBtn.style.display = 'none';
+        }
+
+        goToScreen('screen-complete');
+    } catch (e) {
+        alert('평가 중 오류: ' + e.message);
+        goToScreen('screen-complete');
+    }
+}
+
+function openSheet() {
+    if (state.sheetViewUrl) {
+        window.open(state.sheetViewUrl, '_blank');
+    } else {
+        alert('구글 시트 URL이 설정되지 않았습니다. 관리자 설정에서 등록해주세요.');
+    }
+}
+
+function restart() {
+    state.debateHistory = [];
+    state.currentStageIndex = 0;
+    state.overtimeSeconds = 0;
+    state.studentPosition = '';
+    state.topic = '';
+    state.currentImage = null;
+    state.lastAiRequest = null;
+    goToScreen('screen-main');
+}
+
+// ============================================================
+// 관리자
+// ============================================================
+async function adminLogin() {
+    const password = document.getElementById('admin-password').value;
+    try {
+        const res = await fetch('/api/admin/login', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ password })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('admin-login-area').style.display = 'none';
+            document.getElementById('admin-settings-area').style.display = 'block';
+
+            // 기존 설정 불러오기
+            const settings = await fetch('/api/admin/settings').then(r => r.json());
+            document.getElementById('admin-api-key').value = settings.api_key || '';
+            document.getElementById('admin-sheet-url').value = settings.sheet_webhook_url || '';
+            document.getElementById('admin-sheet-view-url').value = settings.sheet_view_url || '';
+        } else {
+            document.getElementById('admin-login-msg').innerHTML = 
+                '<div class="alert alert-error">' + (data.error || '로그인 실패') + '</div>';
+        }
+    } catch (e) {
+        document.getElementById('admin-login-msg').innerHTML = 
+            '<div class="alert alert-error">오류: ' + e.message + '</div>';
+    }
+}
+
+async function testApiConnection() {
+    const apiKey = document.getElementById('admin-api-key').value.trim();
+    const resultEl = document.getElementById('api-test-result');
+    resultEl.innerHTML = '<div class="alert alert-info">테스트 중...</div>';
+
+    try {
+        const res = await fetch('/api/test-connection', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ api_key: apiKey })
+        });
+        const data = await res.json();
+        if (data.success) {
+            resultEl.innerHTML = '<div class="alert alert-success">' + data.message + '</div>';
+        } else {
+            resultEl.innerHTML = '<div class="alert alert-error">' + data.error + '</div>';
+        }
+    } catch (e) {
+        resultEl.innerHTML = '<div class="alert alert-error">오류: ' + e.message + '</div>';
+    }
+}
+
+async function testSheetConnection() {
+    const url = document.getElementById('admin-sheet-url').value.trim();
+    const resultEl = document.getElementById('sheet-test-result');
+    resultEl.innerHTML = '<div class="alert alert-info">테스트 중... (시트에 테스트 행이 추가되는지 확인하세요)</div>';
+
+    try {
+        const res = await fetch('/api/test-sheet', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ sheet_webhook_url: url })
+        });
+        const data = await res.json();
+        if (data.success) {
+            resultEl.innerHTML = '<div class="alert alert-success">' + data.message + '<br><strong>구글 시트에 테스트 데이터가 들어왔는지 직접 확인해주세요!</strong></div>';
+        } else {
+            resultEl.innerHTML = '<div class="alert alert-error">' + data.error + '</div>';
+        }
+    } catch (e) {
+        resultEl.innerHTML = '<div class="alert alert-error">오류: ' + e.message + '</div>';
+    }
+}
+
+async function saveAdminSettings() {
+    const apiKey = document.getElementById('admin-api-key').value.trim();
+    const sheetUrl = document.getElementById('admin-sheet-url').value.trim();
+    const sheetViewUrl = document.getElementById('admin-sheet-view-url').value.trim();
+
+    try {
+        const res = await fetch('/api/admin/settings', {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ api_key: apiKey, sheet_webhook_url: sheetUrl, sheet_view_url: sheetViewUrl })
+        });
+        const data = await res.json();
+        if (data.success) {
+            document.getElementById('admin-save-msg').innerHTML = 
+                '<div class="alert alert-success">설정이 저장되었습니다.</div>';
+            setTimeout(() => goToScreen('screen-main'), 1500);
+        }
+    } catch (e) {
+        document.getElementById('admin-save-msg').innerHTML = 
+            '<div class="alert alert-error">저장 실패: ' + e.message + '</div>';
+    }
+}
+
+</script>
+</body>
+</html>
